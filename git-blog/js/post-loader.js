@@ -80,11 +80,8 @@
     const script = document.createElement("script");
     script.src = "https://giscus.app/client.js";
 
-    // 아래 값들을 자신의 저장소 설정에 맞게 교체하세요.
-    script.setAttribute(
-      "data-repo",
-      "{your_github_username}/{your_github_username}.github.io"
-    );
+    // 아래 값들을 자신의 저장소 설정에 맞게 교체했습니다.
+    script.setAttribute("data-repo", "wnsqja2209/wnsqja2209.github.io");
     script.setAttribute("data-repo-id", "R_kgDOQLHKCg");
     script.setAttribute("data-category", "General");
     script.setAttribute("data-category-id", "DIC_kwDOQLHKCs4CxMZy");
