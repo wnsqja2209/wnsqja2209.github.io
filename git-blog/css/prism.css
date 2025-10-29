@@ -1,0 +1,134 @@
+/* PrismJS Theme - Adapted for Light/Dark Mode */
+:root {
+  --prism-bg: #f6f8fa;
+  --prism-text: #24292e;
+  --prism-comment: #6a737d;
+  --prism-keyword: #d73a49;
+  --prism-string: #032f62;
+  --prism-number: #005cc5;
+  --prism-function: #6f42c1;
+  --prism-variable: #e36209;
+  --prism-class: #6f42c1;
+  --prism-property: #005cc5;
+  --prism-punctuation: #586069;
+}
+
+[data-theme="dark"] {
+  --prism-bg: #161b22;
+  --prism-text: #e6edf3;
+  --prism-comment: #8b949e;
+  --prism-keyword: #ff7b72;
+  --prism-string: #a5c9ea;
+  --prism-number: #79c0ff;
+  --prism-function: #d2a8ff;
+  --prism-variable: #ffa657;
+  --prism-class: #d2a8ff;
+  --prism-property: #79c0ff;
+  --prism-punctuation: #c9d1d9;
+}
+
+/* PrismJS Base Styles */
+pre[class*="language-"] {
+  background: var(--prism-bg) !important;
+  color: var(--prism-text) !important;
+  padding: 1rem !important;
+  border-radius: 6px !important;
+  overflow-x: auto !important;
+  margin: 1.5rem 0 !important;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace !important;
+  font-size: 0.9em !important;
+  line-height: 1.4 !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+code[class*="language-"] {
+  background: var(--prism-bg) !important;
+  color: var(--prism-text) !important;
+  padding: 2px 6px !important;
+  border-radius: 3px !important;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace !important;
+  font-size: 0.9em !important;
+}
+
+/* PrismJS Token Styles */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: var(--prism-comment) !important;
+}
+
+.token.punctuation {
+  color: var(--prism-punctuation) !important;
+}
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: var(--prism-property) !important;
+}
+
+.token.boolean,
+.token.number {
+  color: var(--prism-number) !important;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: var(--prism-string) !important;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.token.variable {
+  color: var(--prism-variable) !important;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.function,
+.token.class-name {
+  color: var(--prism-function) !important;
+}
+
+.token.keyword {
+  color: var(--prism-keyword) !important;
+}
+
+.token.regex,
+.token.important {
+  color: var(--prism-keyword) !important;
+}
+
+/* Line highlighting */
+.line-highlight {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme="dark"] .line-highlight {
+  background: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Copy button styles (if using copy-to-clipboard plugin) */
+.copy-to-clipboard-button {
+  background: var(--prism-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--prism-text) !important;
+  border-radius: 3px !important;
+  padding: 4px 8px !important;
+  font-size: 0.8em !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.copy-to-clipboard-button:hover {
+  background: var(--button-hover) !important;
+  border-color: var(--link-color) !important;
+}
