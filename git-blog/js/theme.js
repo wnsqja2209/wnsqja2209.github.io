@@ -1,72 +1,47 @@
-/**
- * Theme Toggle Functionality
- * Handles dark/light mode switching and persistence
- */
+(function () {
+  const STORAGE_KEY = "theme";
 
-class ThemeManager {
-  constructor() {
-    this.themeToggle = document.getElementById('theme-toggle');
-    this.themeIcon = document.getElementById('theme-icon');
-    this.currentTheme = this.getStoredTheme() || 'light';
-    this.init();
-  }
-
-  init() {
-    // Apply initial theme
-    this.applyTheme(this.currentTheme);
-
-    // Bind event listeners
-    if (this.themeToggle) {
-      this.themeToggle.addEventListener('click', () => this.toggleTheme());
-    }
-
-    // Listen for system theme changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-      if (!this.getStoredTheme()) {
-        this.applyTheme(e.matches ? 'dark' : 'light');
-      }
-    });
-  }
-
-  getStoredTheme() {
-    return localStorage.getItem('theme');
-  }
-
-  storeTheme(theme) {
-    localStorage.setItem('theme', theme);
-  }
-
-  applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    this.currentTheme = theme;
-
-    // Update icon
-    if (this.themeIcon) {
-      this.themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
-    }
-
-    // Update toggle button title
-    if (this.themeToggle) {
-      this.themeToggle.title = theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환';
+  function getStoredTheme() {
+    try {
+      return localStorage.getItem(STORAGE_KEY);
+    } catch {
+      return null;
     }
   }
 
-  toggleTheme() {
-    const newTheme = this.currentTheme === 'light' ? 'dark' : 'light';
-    this.applyTheme(newTheme);
-    this.storeTheme(newTheme);
+  function storeTheme(theme) {
+    try {
+      localStorage.setItem(STORAGE_KEY, theme);
+    } catch {}
   }
 
-  // Get system preference
-  getSystemTheme() {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  function getPreferredTheme() {
+    const stored = getStoredTheme();
+    if (stored === "light" || stored === "dark") return stored;
+    return window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
   }
-}
 
-// Initialize theme manager when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  new ThemeManager();
-});
+  function applyTheme(theme) {
+    if (theme === "dark") {
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
+  }
 
-// Export for potential use in other scripts
-window.ThemeManager = ThemeManager;
+  function toggleTheme() {
+    const current = getPreferredTheme();
+    const next = current === "dark" ? "light" : "dark";
+    storeTheme(next);
+    applyTheme(next);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    applyTheme(getPreferredTheme());
+    const btn = document.getElementById("theme-toggle");
+    if (btn) btn.addEventListener("click", toggleTheme);
+  });
+})();

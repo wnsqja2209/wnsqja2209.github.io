@@ -1,137 +1,145 @@
-/**
- * Main Application Logic
- * Handles post listing and overall app initialization
- */
+(function () {
+  const state = {
+    posts: [],
+    query: "",
+    activeTag: null,
+  };
 
-class App {
-  constructor() {
-    this.postsContainer = document.getElementById('posts-container');
-    this.posts = [];
-    this.currentPage = 1;
-    this.postsPerPage = 10;
-
-    this.init();
+  function normalize(str) {
+    return (str || "").toString().toLowerCase();
   }
 
-  init() {
-    this.loadPosts();
+  function filterPosts() {
+    const q = normalize(state.query);
+    return state.posts.filter((p) => {
+      const matchQuery =
+        !q ||
+        normalize(p.title).includes(q) ||
+        normalize(p.description).includes(q) ||
+        (Array.isArray(p.tags) && p.tags.some((t) => normalize(t).includes(q)));
+      const matchTag =
+        !state.activeTag ||
+        (Array.isArray(p.tags) && p.tags.includes(state.activeTag));
+      return matchQuery && matchTag;
+    });
   }
 
-  async loadPosts() {
-    try {
-      const response = await fetch('posts.json');
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+  function renderTags() {
+    const el = document.getElementById("tag-filters");
+    if (!el) return;
+    const allTags = new Set();
+    state.posts.forEach((p) => (p.tags || []).forEach((t) => allTags.add(t)));
+    const tags = Array.from(allTags).sort((a, b) => a.localeCompare(b));
 
-      this.posts = await response.json();
-      this.renderPosts();
+    el.innerHTML = "";
 
-    } catch (error) {
-      console.error('Error loading posts:', error);
-      this.showError('게시글 목록을 불러올 수 없습니다. posts.json 파일이 존재하는지 확인해주세요.');
-    }
+    const clearBtn = document.createElement("button");
+    clearBtn.className = `tag-chip${state.activeTag ? "" : " active"}`;
+    clearBtn.textContent = "전체";
+    clearBtn.addEventListener("click", () => {
+      state.activeTag = null;
+      renderTags();
+      renderList();
+    });
+    el.appendChild(clearBtn);
+
+    tags.forEach((tag) => {
+      const btn = document.createElement("button");
+      btn.className = `tag-chip${state.activeTag === tag ? " active" : ""}`;
+      btn.textContent = `#${tag}`;
+      btn.addEventListener("click", () => {
+        state.activeTag = state.activeTag === tag ? null : tag;
+        renderTags();
+        renderList();
+      });
+      el.appendChild(btn);
+    });
   }
 
-  renderPosts() {
-    if (!this.postsContainer) return;
+  function renderList() {
+    const el = document.getElementById("posts-list");
+    if (!el) return;
+    const list = filterPosts();
+    el.innerHTML = "";
 
-    if (this.posts.length === 0) {
-      this.postsContainer.innerHTML = '<div class="no-posts">아직 작성된 게시글이 없습니다.</div>';
+    if (list.length === 0) {
+      el.innerHTML = '<p class="muted">검색 결과가 없습니다.</p>';
       return;
     }
 
-    // Calculate pagination
-    const totalPages = Math.ceil(this.posts.length / this.postsPerPage);
-    const startIndex = (this.currentPage - 1) * this.postsPerPage;
-    const endIndex = startIndex + this.postsPerPage;
-    const postsToShow = this.posts.slice(startIndex, endIndex);
-
-    // Render posts
-    const postsHtml = postsToShow.map(post => this.createPostCard(post)).join('');
-    this.postsContainer.innerHTML = postsHtml;
-
-    // Update pagination if we have pagination controls
-    if (totalPages > 1) {
-      this.updatePagination(totalPages);
-    }
-  }
-
-  createPostCard(post) {
-    const date = new Date(post.date);
-    const formattedDate = date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    const frag = document.createDocumentFragment();
+    list.forEach((p) => {
+      const card = document.createElement("article");
+      card.className = "post-card";
+      const tags = (p.tags || []).map((t) => `#${t}`).join(" · ");
+      card.innerHTML = `
+        <a href="post.html?file=${encodeURIComponent(p.file)}">
+          <h3>${escapeHtml(p.title)}</h3>
+        </a>
+        <div class="meta">${escapeHtml(p.date)}${
+        tags ? ` · ${escapeHtml(tags)}` : ""
+      }</div>
+        <p class="excerpt">${escapeHtml(p.excerpt || p.description || "")}</p>
+      `;
+      frag.appendChild(card);
     });
-
-    const tagsHtml = post.tags && post.tags.length > 0
-      ? post.tags.map(tag => `<span class="post-tag">${tag}</span>`).join('')
-      : '';
-
-    const categoryHtml = post.category
-      ? `<div class="post-category">${post.category}</div>`
-      : '';
-
-    return `
-      <article class="post-card">
-        <h2 class="post-title">
-          <a href="post.html?post=${post.file}">${post.title}</a>
-        </h2>
-        <div class="post-meta">
-          <time>${formattedDate}</time>
-          ${categoryHtml}
-        </div>
-        <p class="post-excerpt">${post.excerpt}</p>
-        <div class="post-tags">${tagsHtml}</div>
-      </article>
-    `;
+    el.appendChild(frag);
   }
 
-  updatePagination(totalPages) {
-    const pagination = document.getElementById('pagination');
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const pageInfo = document.getElementById('page-info');
-
-    if (!pagination || !prevBtn || !nextBtn || !pageInfo) return;
-
-    pageInfo.textContent = `${this.currentPage} / ${totalPages}`;
-    prevBtn.disabled = this.currentPage === 1;
-    nextBtn.disabled = this.currentPage === totalPages;
-
-    prevBtn.onclick = () => {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-        this.renderPosts();
-        // Scroll to top of posts
-        this.postsContainer.scrollIntoView({ behavior: 'smooth' });
-      }
-    };
-
-    nextBtn.onclick = () => {
-      if (this.currentPage < totalPages) {
-        this.currentPage++;
-        this.renderPosts();
-        // Scroll to top of posts
-        this.postsContainer.scrollIntoView({ behavior: 'smooth' });
-      }
-    };
-
-    pagination.style.display = 'flex';
+  function escapeHtml(s) {
+    return (s || "")
+      .toString()
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
-  showError(message) {
-    if (this.postsContainer) {
-      this.postsContainer.innerHTML = `<div class="error" style="text-align: center; padding: 2rem; color: var(--text-secondary); background-color: var(--loading-bg); border-radius: 8px; margin: 2rem 0;">${message}</div>`;
+  async function loadPosts() {
+    try {
+      const res = await fetch("posts.json", { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (!Array.isArray(data)) throw new Error("invalid posts.json");
+      state.posts = data;
+    } catch (e) {
+      console.error("Failed to load posts.json", e);
+      state.posts = [];
     }
   }
-}
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  new App();
-});
+  function attachSearch() {
+    const input = document.getElementById("search-input");
+    if (!input) return;
+    input.addEventListener("input", () => {
+      state.query = input.value || "";
+      renderList();
+    });
+  }
 
-// Export for potential use in other scripts
-window.App = App;
+  async function init() {
+    await loadPosts();
+    renderTags();
+    renderList();
+    attachSearch();
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+
+  // 공개 API (필요 시 다른 스크립트에서 사용)
+  window.BlogApp = {
+    setQuery(q) {
+      state.query = q || "";
+      renderList();
+    },
+    setTag(tag) {
+      state.activeTag = tag || null;
+      renderTags();
+      renderList();
+    },
+    get posts() {
+      return [...state.posts];
+    },
+  };
+})();

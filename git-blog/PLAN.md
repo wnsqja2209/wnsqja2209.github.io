@@ -2,7 +2,7 @@
 
 ## 📋 프로젝트 개요
 
-- 배포: {your_github_username}.github.io
+- 배포: wnsqja2209.github.io
 - 기술: HTML, CSS, Vanilla JavaScript
 - 마크다운 파싱: marked.js (CDN)
 - 코드 하이라이팅: Prism.js
